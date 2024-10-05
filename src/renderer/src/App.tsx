@@ -1,19 +1,32 @@
-import { useState, useEffect } from "react";
-import {
-  Button,
-  Typography,
-  Box,
-  TextField,
-  Paper,
-  Fab,
-  Slide,
-  IconButton,
-} from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CheckIcon from "@mui/icons-material/Check";
+import ClearIcon from "@mui/icons-material/Clear";
 import EditIcon from "@mui/icons-material/Edit";
+import {
+  Box,
+  Fab,
+  IconButton,
+  Paper,
+  Slide,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { useEffect, useState } from "react";
 import CelebrationComponent from "./components/Celebration";
+import { TimerDisplay } from "./components/TimerDisplay";
+import { TimerSelect } from "./components/TimerSelect";
 import Warning from "./components/Warning";
+
+export interface IElectronAPI {
+  resizeWindow: (width: number, height: number) => void;
+  setFullScreen: (isFullScreen: boolean) => void;
+}
+
+declare global {
+  interface Window {
+    api: IElectronAPI;
+  }
+}
 
 const theme = createTheme({
   palette: {
@@ -26,16 +39,7 @@ const theme = createTheme({
   },
 });
 
-const lessonDurations = [
-  { label: "xコマ (0.5分)", minutes: 0.5, color: "primary" },
-  { label: "1コマ (50分)", minutes: 50, color: "primary" },
-  { label: "2コマ (100分)", minutes: 100, color: "secondary" },
-  { label: "3コマ (150分)", minutes: 150, color: "success" },
-  { label: "4コマ (200分)", minutes: 200, color: "warning" },
-];
-
 const App = () => {
-  const [customTime, setCustomTime] = useState<number>(0);
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [showEndMessage, setShowEndMessage] = useState(false);
@@ -49,6 +53,25 @@ const App = () => {
     setEndTime(end);
     setRemainingTime(minutes * 60);
     setShowWarning(false);
+
+    handleChangeWindowSize(400, 145);
+  };
+
+  const stopTimer = () => {
+    setEndTime(null);
+    setRemainingTime(0);
+    setShowWarning(false);
+    setShowEndMessage(false);
+    setShowWelcomeMessage(false);
+    setShowMessageInput(true);
+
+    handleChangeWindowSize(900, 670);
+  };
+
+  const confirmToStopTimer = () => {
+    if (window.confirm("タイマーを停止しますか？")) {
+      stopTimer();
+    }
   };
 
   const handleConfirmMessage = () => {
@@ -63,6 +86,10 @@ const App = () => {
     setShowWelcomeMessage(false);
   };
 
+  const handleChangeWindowSize = (width: number, height: number) => {
+    window.api.resizeWindow(width, height);
+  };
+
   // @ts-ignore
   useEffect(() => {
     if (endTime) {
@@ -73,6 +100,7 @@ const App = () => {
 
         if (diff <= 300 && diff > 0 && !showWarning) {
           setShowWarning(true);
+          window.api.setFullScreen(true);
         } else if (diff <= 0) {
           setShowEndMessage(true);
           setShowWarning(false);
@@ -88,78 +116,45 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <Box
         sx={{
-          minHeight: "100vh",
-          width: "100vw",
           bgcolor: "background.default",
           position: "relative",
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
           alignItems: "flex-start",
+          overflow: "hidden",
         }}
       >
-        <Box sx={{ display: "flex", margin: "auto", flexGrow: 1 }}>
+        {endTime && (
+          <Fab
+            size="small"
+            sx={{
+              position: "absolute",
+              top: "0px",
+              right: "16px",
+              zIndex: 999,
+            }}
+            onClick={confirmToStopTimer}
+          >
+            <ClearIcon />
+          </Fab>
+        )}
+        <Box
+          sx={{
+            display: "flex",
+            margin: endTime ? "0" : "auto",
+            flexGrow: 1,
+          }}
+        >
           <Box
             sx={{
               display: "flex",
               flexDirection: "column",
+              justifyContent: "center",
               gap: "16px",
               flexGrow: 1,
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: "16px",
-              }}
-            >
-              {lessonDurations.map((duration) => (
-                <Box key={duration.minutes} sx={{ display: "flex" }}>
-                  <Button
-                    variant="contained"
-                    color={
-                      duration.color as
-                        | "primary"
-                        | "secondary"
-                        | "success"
-                        | "warning"
-                    }
-                    onClick={() => startTimer(duration.minutes)}
-                    fullWidth
-                    sx={{ padding: "16px", fontSize: "1.4rem" }}
-                  >
-                    {duration.label}
-                  </Button>
-                </Box>
-              ))}
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "16px",
-              }}
-            >
-              <TextField
-                variant="outlined"
-                type="number"
-                value={customTime}
-                fullWidth
-                onChange={(e) => setCustomTime(Number(e.target.value))}
-                size="small"
-              />
-              <Button
-                type="button"
-                variant="contained"
-                color="primary"
-                sx={{ minWidth: "200px" }}
-                onClick={() => startTimer(customTime)}
-              >
-                カスタム
-              </Button>
-            </Box>
             {showWelcomeMessage && (
               <Paper
                 elevation={0}
@@ -178,42 +173,32 @@ const App = () => {
                 </IconButton>
               </Paper>
             )}
+            {!endTime && <TimerSelect startTimer={startTimer} />}
             {endTime && (
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  padding: "32px",
-                  gap: "8px",
-                  flexGrow: 1,
-                }}
-              >
-                <Typography
-                  sx={{
-                    fontSize: "2rem",
-                  }}
-                >
-                  終了時刻: {endTime.toLocaleTimeString()}
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 700, fontSize: "3rem" }}
-                >
-                  残り時間: {Math.floor(remainingTime / 60)}分{" "}
-                  {remainingTime % 60}秒
-                </Typography>
-              </Box>
+              <TimerDisplay
+                remainingTime={remainingTime}
+                endTime={endTime}
+                changeWindowSize={handleChangeWindowSize}
+              />
             )}
           </Box>
         </Box>
-        <Warning
-          showWarning={showWarning}
-          endTime={endTime}
-          remainingTime={remainingTime}
-        />
-        <CelebrationComponent showEndMessage={showEndMessage} />
-        <Slide direction="up" in={showMessageInput} mountOnEnter unmountOnExit>
+        {showWarning && (
+          <Warning
+            showWarning={showWarning}
+            endTime={endTime}
+            remainingTime={remainingTime}
+          />
+        )}
+        {showEndMessage && (
+          <CelebrationComponent showEndMessage={showEndMessage} />
+        )}
+        <Slide
+          direction="up"
+          in={!endTime && showMessageInput}
+          mountOnEnter
+          unmountOnExit
+        >
           <Box
             sx={{
               position: "fixed",

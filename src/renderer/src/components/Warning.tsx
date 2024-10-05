@@ -1,5 +1,5 @@
-import { Box, Fade, Typography } from '@mui/material'
-import { FC } from "react";
+import { Box, Fade, Typography } from "@mui/material";
+import type { FC } from "react";
 
 type Props = {
   showWarning: boolean;
@@ -23,7 +23,7 @@ const Warning: FC<Props> = (props) => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 1300,
+          zIndex: 300,
         }}
       >
         <Typography
