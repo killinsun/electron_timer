@@ -1,11 +1,15 @@
 import { Box, Typography } from "@mui/material";
-import { FC, useState } from "react";
+import { type FC, useState } from "react";
 import AnalogClock from "./AnalogClock";
 
 type Props = {
   remainingTime: number;
   endTime: Date;
-  changeWindowSize: (width: number, height: number) => void;
+  changeWindowSize: (
+    width: number,
+    height: number,
+    isBottomRight: boolean,
+  ) => void;
 };
 
 export const TimerDisplay: FC<Props> = (props) => {
@@ -16,9 +20,9 @@ export const TimerDisplay: FC<Props> = (props) => {
     setShowAnalog((prev) => !prev);
 
     if (showAnalog) {
-      changeWindowSize(400, 145);
+      changeWindowSize(400, 145, true);
     } else {
-      changeWindowSize(250, 225);
+      changeWindowSize(250, 225, true);
     }
   };
 
@@ -35,7 +39,7 @@ export const TimerDisplay: FC<Props> = (props) => {
       onDoubleClick={toggleDisplayMode}
     >
       {showAnalog ? (
-        <AnalogClock endTime={endTime} remainingTime={remainingTime} />
+        <AnalogClock />
       ) : (
         <>
           <Typography

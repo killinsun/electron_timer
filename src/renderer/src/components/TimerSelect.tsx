@@ -1,23 +1,24 @@
 import { Box, Button, TextField } from "@mui/material";
 import { type FC, useState } from "react";
-
-const lessonDurations = [
-  { label: "1コマ (50分)", minutes: 50, color: "primary" },
-  { label: "2コマ (100分)", minutes: 100, color: "secondary" },
-  { label: "3コマ (150分)", minutes: 150, color: "success" },
-  { label: "4コマ (200分)", minutes: 200, color: "warning" },
-];
+import type { LessonDuration } from "../hooks/useLessonDurations";
 
 type Props = {
   startTimer: (minutes: number) => void;
+  onClickSettings: () => void;
+  lessonDurations: LessonDuration[];
 };
 
 export const TimerSelect: FC<Props> = (props) => {
-  const { startTimer } = props;
+  const { startTimer, onClickSettings, lessonDurations } = props;
   const [customTime, setCustomTime] = useState<number>(0);
 
   return (
     <>
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button variant="text" color="primary" onClick={onClickSettings}>
+          設定
+        </Button>
+      </Box>
       <Box
         sx={{
           display: "flex",
@@ -29,16 +30,19 @@ export const TimerSelect: FC<Props> = (props) => {
           <Box key={duration.minutes} sx={{ display: "flex" }}>
             <Button
               variant="contained"
-              color={
-                duration.color as
-                  | "primary"
-                  | "secondary"
-                  | "success"
-                  | "warning"
-              }
               onClick={() => startTimer(duration.minutes)}
               fullWidth
-              sx={{ padding: "16px", fontSize: "1.4rem" }}
+              sx={{
+                padding: "16px",
+                fontSize: "1.4rem",
+                color: "white",
+                backgroundColor: duration.color,
+                transition: "all 0.3s",
+                "&:hover": {
+                  backgroundColor: duration.color,
+                  filter: "brightness(80%)",
+                },
+              }}
             >
               {duration.label}
             </Button>

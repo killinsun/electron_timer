@@ -16,9 +16,11 @@ import CelebrationComponent from "./components/Celebration";
 import { TimerDisplay } from "./components/TimerDisplay";
 import { TimerSelect } from "./components/TimerSelect";
 import Warning from "./components/Warning";
+import { SettingsModal } from "./components/settingsModal";
+import { useLessonDurations } from "./hooks/useLessonDurations";
 
 export interface IElectronAPI {
-  resizeWindow: (width: number, height: number) => void;
+  resizeWindow: (width: number, height: number, isBottomRight: boolean) => void;
   setFullScreen: (isFullScreen: boolean) => void;
 }
 
@@ -40,6 +42,7 @@ const theme = createTheme({
 });
 
 const App = () => {
+  const { lessonDurations, updateLessonDurations } = useLessonDurations();
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [showEndMessage, setShowEndMessage] = useState(false);
@@ -47,6 +50,7 @@ const App = () => {
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showMessageInput, setShowMessageInput] = useState(true);
   const [showWarning, setShowWarning] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const startTimer = (minutes: number) => {
     const end = new Date(Date.now() + minutes * 60000);
@@ -54,7 +58,7 @@ const App = () => {
     setRemainingTime(minutes * 60);
     setShowWarning(false);
 
-    handleChangeWindowSize(400, 145);
+    handleChangeWindowSize(400, 145, true);
   };
 
   const stopTimer = () => {
@@ -65,7 +69,7 @@ const App = () => {
     setShowWelcomeMessage(false);
     setShowMessageInput(true);
 
-    handleChangeWindowSize(900, 670);
+    handleChangeWindowSize(900, 670, false);
   };
 
   const confirmToStopTimer = () => {
@@ -86,8 +90,12 @@ const App = () => {
     setShowWelcomeMessage(false);
   };
 
-  const handleChangeWindowSize = (width: number, height: number) => {
-    window.api.resizeWindow(width, height);
+  const handleChangeWindowSize = (
+    width: number,
+    height: number,
+    isBottomRight: boolean,
+  ) => {
+    window.api.resizeWindow(width, height, isBottomRight);
   };
 
   // @ts-ignore
@@ -105,6 +113,7 @@ const App = () => {
           setShowEndMessage(true);
           setShowWarning(false);
           clearInterval(timer);
+          window.api.setFullScreen(true);
         }
       }, 1000);
 
@@ -125,6 +134,14 @@ const App = () => {
           overflow: "hidden",
         }}
       >
+        {showSettingsModal && (
+          <SettingsModal
+            open={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            initialDurations={lessonDurations}
+            onSave={updateLessonDurations}
+          />
+        )}
         {endTime && (
           <Fab
             size="small"
@@ -173,7 +190,13 @@ const App = () => {
                 </IconButton>
               </Paper>
             )}
-            {!endTime && <TimerSelect startTimer={startTimer} />}
+            {!endTime && (
+              <TimerSelect
+                lessonDurations={lessonDurations}
+                startTimer={startTimer}
+                onClickSettings={() => setShowSettingsModal(true)}
+              />
+            )}
             {endTime && (
               <TimerDisplay
                 remainingTime={remainingTime}

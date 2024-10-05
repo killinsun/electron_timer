@@ -3,8 +3,9 @@ import { contextBridge, ipcRenderer } from "electron";
 
 // Custom APIs for renderer
 const api = {
-  resizeWindow: async (width: number, height: number) => {
-    await ipcRenderer.invoke("resize-window", { width, height });
+  resizeWindow: async (width: number, height: number, isBottomRight = true) => {
+    await ipcRenderer.invoke("set-full-screen", false);
+    await ipcRenderer.invoke("resize-window", { width, height, isBottomRight });
   },
   setFullScreen: async (isFullScreen: boolean) => {
     await ipcRenderer.invoke("set-full-screen", isFullScreen);

@@ -1,7 +1,36 @@
 import { join } from "node:path";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, app, ipcMain, shell } from "electron";
+import { BrowserWindow, app, ipcMain, screen, shell } from "electron";
 import icon from "../../resources/icon.png?asset";
+
+export function centerWindow(win: BrowserWindow) {
+  // ウィンドウのサイズを取得
+  const [width, height] = win.getSize();
+
+  // プライマリディスプレイの作業領域（タスクバーを除いた領域）を取得
+  const { workArea } = screen.getPrimaryDisplay();
+
+  // 中央の座標を計算
+  const x = Math.round(workArea.x + (workArea.width - width) / 2);
+  const y = Math.round(workArea.y + (workArea.height - height) / 2);
+
+  // ウィンドウを移動
+  win.setPosition(x, y);
+}
+export function positionWindowBottomRight(win: BrowserWindow) {
+  // ウィンドウのサイズを取得
+  const [width, height] = win.getSize();
+
+  // プライマリディスプレイの作業領域（タスクバーを除いた領域）を取得
+  const { workArea } = screen.getPrimaryDisplay();
+
+  // 右下の座標を計算
+  const x = workArea.x + workArea.width - width;
+  const y = workArea.y + workArea.height - height;
+
+  // ウィンドウを移動
+  win.setPosition(x, y);
+}
 
 function createWindow(): void {
   // Create the browser window.
@@ -19,9 +48,12 @@ function createWindow(): void {
     },
   });
 
-  ipcMain.handle("resize-window", (_, { width, height }) => {
+  ipcMain.handle("resize-window", (_, { width, height, isBottomRight }) => {
     console.log("resize-window", width, height);
     mainWindow.setSize(width, height);
+
+    if (isBottomRight) positionWindowBottomRight(mainWindow);
+    else centerWindow(mainWindow);
   });
 
   ipcMain.handle("set-full-screen", (_, isFullScreen) => {
