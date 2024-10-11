@@ -1,6 +1,18 @@
+import * as fs from "node:fs";
 import { join } from "node:path";
+import * as path from "node:path";
+import * as url from "node:url";
 import { electronApp, is, optimizer } from "@electron-toolkit/utils";
-import { BrowserWindow, app, ipcMain, screen, shell } from "electron";
+import {
+  BrowserWindow,
+  app,
+  ipcMain,
+  protocol,
+  screen,
+  session,
+  shell,
+} from "electron";
+import { dialog } from "electron";
 import icon from "../../resources/icon.png?asset";
 
 export function centerWindow(win: BrowserWindow) {
@@ -45,7 +57,22 @@ function createWindow(): void {
       sandbox: false,
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: true,
     },
+  });
+
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        "Content-Security-Policy": [
+          "default-src 'self';" +
+            "style-src 'self' 'unsafe-inline';" +
+            "media-src 'self' safe-file:;" +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+        ],
+      },
+    });
   });
 
   ipcMain.handle("resize-window", (_, { width, height, isBottomRight }) => {
@@ -58,6 +85,38 @@ function createWindow(): void {
 
   ipcMain.handle("set-full-screen", (_, isFullScreen) => {
     mainWindow.setFullScreen(isFullScreen);
+  });
+
+  ipcMain.handle("upload-video", async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ["openFile"],
+      filters: [{ name: "Videos", extensions: ["mp4", "avi", "mov"] }],
+    });
+
+    console.log("upload-video", result);
+
+    if (!result.canceled && result.filePaths.length > 0) {
+      const sourcePath = result.filePaths[0];
+      const fileName = path.basename(sourcePath);
+      const destinationPath = path.join(
+        app.getPath("userData"),
+        "videos",
+        fileName,
+      );
+
+      // ディレクトリが存在しない場合は作成
+      if (!fs.existsSync(path.dirname(destinationPath))) {
+        fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
+      }
+
+      // ファイルをコピー
+      fs.copyFileSync(sourcePath, destinationPath);
+
+      console.log("upload-video", destinationPath);
+
+      return destinationPath;
+    }
+    return null;
   });
 
   mainWindow.on("ready-to-show", () => {
@@ -84,6 +143,13 @@ function createWindow(): void {
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId("com.electron");
+
+  protocol.registerFileProtocol("safe-file", (request, callback) => {
+    const filePath = url.fileURLToPath(
+      `file://${request.url.slice("safe-file://".length)}`,
+    );
+    callback({ path: filePath });
+  });
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.

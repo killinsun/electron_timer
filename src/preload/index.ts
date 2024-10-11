@@ -10,6 +10,9 @@ const api = {
   setFullScreen: async (isFullScreen: boolean) => {
     await ipcRenderer.invoke("set-full-screen", isFullScreen);
   },
+  uploadVideo: async () => {
+    return await ipcRenderer.invoke("upload-video");
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

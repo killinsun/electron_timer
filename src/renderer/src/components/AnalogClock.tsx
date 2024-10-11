@@ -1,7 +1,6 @@
-const AnalogClock = () => {
-  const radius = 80;
-  const center = radius + 10;
-  const size = (radius + 10) * 2;
+const AnalogClock = ({ size = 128 }) => {
+  const radius = size / 2 - 10;
+  const center = size / 2;
 
   const now = new Date();
   const secondsAngle =
@@ -20,22 +19,23 @@ const AnalogClock = () => {
         stroke="black"
         strokeWidth="2"
       />
-      {[...Array(12)].map((_, i) => {
-        const angle = (i * 30 * Math.PI) / 180;
-        const x1 = center + (radius - 5) * Math.sin(angle);
-        const y1 = center - (radius - 5) * Math.cos(angle);
-        const x2 = center + radius * Math.sin(angle);
-        const y2 = center - radius * Math.cos(angle);
+      {[...Array(12)].map((item, i) => {
+        const angle = (i * 30 - 90) * (Math.PI / 180);
+        const padding = size / 10; // サイズの1/8を内側の余白として使用
+        const numberX = center + (radius - padding) * Math.cos(angle);
+        const numberY = center + (radius - padding) * Math.sin(angle);
         return (
-          <line
-            key={i}
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            stroke="black"
-            strokeWidth="2"
-          />
+          <text
+            key={`number_${item}`}
+            x={numberX}
+            y={numberY}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fontSize={size / 15}
+            fontWeight="bold"
+          >
+            {i === 0 ? "12" : i}
+          </text>
         );
       })}
       <line

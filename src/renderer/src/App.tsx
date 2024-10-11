@@ -18,10 +18,13 @@ import { TimerSelect } from "./components/TimerSelect";
 import Warning from "./components/Warning";
 import { SettingsModal } from "./components/settingsModal";
 import { useLessonDurations } from "./hooks/useLessonDurations";
+import { useSettings } from "./hooks/useSettings";
 
 export interface IElectronAPI {
   resizeWindow: (width: number, height: number, isBottomRight: boolean) => void;
   setFullScreen: (isFullScreen: boolean) => void;
+  uploadVideo: () => Promise<string | null>;
+  getSavedVideo: () => Promise<File>;
 }
 
 declare global {
@@ -43,6 +46,7 @@ const theme = createTheme({
 
 const App = () => {
   const { lessonDurations, updateLessonDurations } = useLessonDurations();
+  const { settings, updateSettings } = useSettings();
   const [endTime, setEndTime] = useState<Date | null>(null);
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [showEndMessage, setShowEndMessage] = useState(false);
@@ -50,7 +54,11 @@ const App = () => {
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showMessageInput, setShowMessageInput] = useState(true);
   const [showWarning, setShowWarning] = useState(false);
+  const [warningTimer, setWarningTimer] = useState<NodeJS.Timeout | null>(null);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [isTimeRunningOut, setIsTimeRunningOut] = useState(false);
+
+  const warningSeconds = settings.warningMinutes * 60;
 
   const startTimer = (minutes: number) => {
     const end = new Date(Date.now() + minutes * 60000);
@@ -58,7 +66,7 @@ const App = () => {
     setRemainingTime(minutes * 60);
     setShowWarning(false);
 
-    handleChangeWindowSize(400, 145, true);
+    handleChangeWindowSize(400, 160, true);
   };
 
   const stopTimer = () => {
@@ -67,6 +75,7 @@ const App = () => {
     setShowWarning(false);
     setShowEndMessage(false);
     setShowWelcomeMessage(false);
+    setIsTimeRunningOut(false);
     setShowMessageInput(true);
 
     handleChangeWindowSize(900, 670, false);
@@ -106,12 +115,25 @@ const App = () => {
         const diff = Math.floor((endTime.getTime() - now.getTime()) / 1000);
         setRemainingTime(diff > 0 ? diff : 0);
 
-        if (diff <= 300 && diff > 0 && !showWarning) {
-          setShowWarning(true);
+        if (
+          diff <= warningSeconds &&
+          diff > 0 &&
+          !isTimeRunningOut &&
+          !showWarning
+        ) {
+          setIsTimeRunningOut(() => true);
+          setShowWarning(() => true);
           window.api.setFullScreen(true);
+
+          const newWarningTimer = setTimeout(() => {
+            setShowWarning(false);
+            window.api.setFullScreen(false);
+          }, 10000);
+          setWarningTimer(() => newWarningTimer);
         } else if (diff <= 0) {
-          setShowEndMessage(true);
-          setShowWarning(false);
+          setShowEndMessage(() => true);
+          setShowWarning(() => false);
+          setIsTimeRunningOut(() => false);
           clearInterval(timer);
           window.api.setFullScreen(true);
         }
@@ -120,6 +142,14 @@ const App = () => {
       return () => clearInterval(timer);
     }
   }, [endTime, showWarning]);
+
+  useEffect(() => {
+    return () => {
+      if (warningTimer) {
+        clearTimeout(warningTimer);
+      }
+    };
+  }, [showWarning]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -139,16 +169,20 @@ const App = () => {
             open={showSettingsModal}
             onClose={() => setShowSettingsModal(false)}
             initialDurations={lessonDurations}
-            onSave={updateLessonDurations}
+            onSaveDurations={updateLessonDurations}
+            initialSettings={settings}
+            onSaveSettings={updateSettings}
           />
         )}
         {endTime && (
           <Fab
             size="small"
             sx={{
+              backgroundColor: "transparent",
+              boxShadow: 0,
               position: "absolute",
               top: "0px",
-              right: "16px",
+              right: "0px",
               zIndex: 999,
             }}
             onClick={confirmToStopTimer}
@@ -199,6 +233,7 @@ const App = () => {
             )}
             {endTime && (
               <TimerDisplay
+                isTimeRunningOut={isTimeRunningOut}
                 remainingTime={remainingTime}
                 endTime={endTime}
                 changeWindowSize={handleChangeWindowSize}
@@ -214,7 +249,10 @@ const App = () => {
           />
         )}
         {showEndMessage && (
-          <CelebrationComponent showEndMessage={showEndMessage} />
+          <CelebrationComponent
+            showEndMessage={showEndMessage}
+            onClickEnd={stopTimer}
+          />
         )}
         <Slide
           direction="up"

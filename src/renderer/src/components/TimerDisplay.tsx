@@ -1,8 +1,9 @@
 import { Box, Typography } from "@mui/material";
-import { type FC, useState } from "react";
+import type { FC } from "react";
 import AnalogClock from "./AnalogClock";
 
 type Props = {
+  isTimeRunningOut: boolean;
   remainingTime: number;
   endTime: Date;
   changeWindowSize: (
@@ -13,47 +14,47 @@ type Props = {
 };
 
 export const TimerDisplay: FC<Props> = (props) => {
-  const { remainingTime, endTime, changeWindowSize } = props;
-  const [showAnalog, setShowAnalog] = useState(false);
-
-  const toggleDisplayMode = () => {
-    setShowAnalog((prev) => !prev);
-
-    if (showAnalog) {
-      changeWindowSize(400, 145, true);
-    } else {
-      changeWindowSize(250, 225, true);
-    }
-  };
+  const { isTimeRunningOut, remainingTime, endTime } = props;
 
   return (
     <Box
       sx={{
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
-        paddingX: "32px",
         gap: "8px",
         flexGrow: 1,
       }}
-      onDoubleClick={toggleDisplayMode}
     >
-      {showAnalog ? (
-        <AnalogClock />
-      ) : (
-        <>
-          <Typography
-            sx={{
-              fontSize: "1.5rem",
-            }}
-          >
-            終了時刻: {endTime.toLocaleTimeString()}
+      <AnalogClock />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: "1.2rem",
+          }}
+        >
+          終了時刻: {endTime.toLocaleTimeString()}
+        </Typography>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            fontSize: "1.5rem",
+            color: isTimeRunningOut ? "red" : "black",
+          }}
+        >
+          残り時間: {Math.floor(remainingTime / 60)}分 {remainingTime % 60}秒
+        </Typography>
+        {isTimeRunningOut && (
+          <Typography variant={"h6"} sx={{ fontSize: "1rem" }}>
+            5分前です。そろそろ保存をして片付けの準備をしましょう
           </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 700, fontSize: "2rem" }}>
-            残り時間: {Math.floor(remainingTime / 60)}分 {remainingTime % 60}秒
-          </Typography>
-        </>
-      )}
+        )}
+      </Box>
     </Box>
   );
 };

@@ -30,7 +30,7 @@ export const useLessonDurations = () => {
 
   const updateLessonDurations = useCallback(
     (newDurations: LessonDuration[]) => {
-      setLessonDurations(newDurations);
+      setLessonDurations(() => newDurations);
     },
     [],
   );

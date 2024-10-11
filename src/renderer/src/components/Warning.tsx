@@ -1,5 +1,6 @@
 import { Box, Fade, Typography } from "@mui/material";
-import type { FC } from "react";
+import { type FC } from "react";
+import { useSettings } from "../hooks/useSettings";
 
 type Props = {
   showWarning: boolean;
@@ -8,6 +9,7 @@ type Props = {
 };
 const Warning: FC<Props> = (props) => {
   const { showWarning, endTime, remainingTime } = props;
+  const { settings } = useSettings();
 
   return (
     <Fade in={showWarning}>
@@ -26,6 +28,15 @@ const Warning: FC<Props> = (props) => {
           zIndex: 300,
         }}
       >
+        {settings.warningVideoPath && (
+          <video
+            src={`safe-file://${settings.warningVideoPath}`}
+            controls
+            autoPlay={true}
+            muted={true}
+            height={600}
+          />
+        )}
         <Typography
           variant="h3"
           sx={{
