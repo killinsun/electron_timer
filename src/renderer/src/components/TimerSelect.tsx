@@ -36,10 +36,10 @@ export const TimerSelect: FC<Props> = (props) => {
                 padding: "16px",
                 fontSize: "1.4rem",
                 color: "white",
-                backgroundColor: duration.color,
+                backgroundColor: duration.hex,
                 transition: "all 0.3s",
                 "&:hover": {
-                  backgroundColor: duration.color,
+                  backgroundColor: duration.hex,
                   filter: "brightness(80%)",
                 },
               }}

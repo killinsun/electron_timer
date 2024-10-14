@@ -76,7 +76,6 @@ function createWindow(): void {
   });
 
   ipcMain.handle("resize-window", (_, { width, height, isBottomRight }) => {
-    console.log("resize-window", width, height);
     mainWindow.setSize(width, height);
 
     if (isBottomRight) positionWindowBottomRight(mainWindow);
@@ -92,8 +91,6 @@ function createWindow(): void {
       properties: ["openFile"],
       filters: [{ name: "Videos", extensions: ["mp4", "avi", "mov"] }],
     });
-
-    console.log("upload-video", result);
 
     if (!result.canceled && result.filePaths.length > 0) {
       const sourcePath = result.filePaths[0];

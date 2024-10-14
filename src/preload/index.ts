@@ -22,8 +22,6 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("electron", electronAPI);
     contextBridge.exposeInMainWorld("api", api);
-
-    console.log(contextBridge);
   } catch (error) {
     console.error(error);
   }

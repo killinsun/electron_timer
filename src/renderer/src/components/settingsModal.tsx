@@ -22,7 +22,7 @@ type LessonDuration = {
   id: string;
   label: string;
   minutes: number;
-  color: "blue" | "green" | "orange" | "red";
+  hex: string;
 };
 
 type Props = {
@@ -35,14 +35,25 @@ type Props = {
 };
 
 const colorOptions: Array<{
-  value: LessonDuration["color"];
+  value: LessonDuration["hex"];
   label: string;
   hex: string;
 }> = [
-  { value: "blue", label: "青", hex: "#2196f3" },
-  { value: "green", label: "緑", hex: "#4caf50" },
-  { value: "orange", label: "オレンジ", hex: "#ff9800" },
-  { value: "red", label: "赤", hex: "#f44336" },
+  { value: "#2196f3", label: "青", hex: "#2196f3" },
+  { value: "#4caf50", label: "緑", hex: "#4caf50" },
+  { value: "#f44336", label: "赤", hex: "#f44336" },
+  { value: "#9c27b0", label: "紫", hex: "#9c27b0" },
+  { value: "#ff9800", label: "オレンジ", hex: "#ff9800" },
+  { value: "#009688", label: "ティール", hex: "#009688" },
+  { value: "#3f51b5", label: "インディゴ", hex: "#3f51b5" },
+  { value: "#ffeb3b", label: "黄", hex: "#ffeb3b" },
+  { value: "#795548", label: "茶", hex: "#795548" },
+  { value: "#e91e63", label: "ピンク", hex: "#e91e63" },
+  { value: "#00bcd4", label: "シアン", hex: "#00bcd4" },
+  { value: "#ff5722", label: "ディープオレンジ", hex: "#ff5722" },
+  { value: "#8bc34a", label: "ライトグリーン", hex: "#8bc34a" },
+  { value: "#ffc107", label: "アンバー", hex: "#ffc107" },
+  { value: "#607d8b", label: "ブルーグレー", hex: "#607d8b" },
 ];
 
 export const SettingsModal: React.FC<Props> = ({
@@ -69,7 +80,7 @@ export const SettingsModal: React.FC<Props> = ({
         id: Math.random().toString(36).substr(2, 9),
         label: "",
         minutes: 0,
-        color: "blue",
+        hex: "#2196f3",
       },
     ]);
   }, []);
@@ -80,6 +91,7 @@ export const SettingsModal: React.FC<Props> = ({
 
   const handleDurationChange = useCallback(
     (id: string, field: keyof LessonDuration, value: string | number) => {
+      console.log({ id, field, value });
       setDurations((prevDurations) =>
         prevDurations.map((d) => (d.id === id ? { ...d, [field]: value } : d)),
       );
@@ -143,7 +155,7 @@ export const SettingsModal: React.FC<Props> = ({
                 sx={{ display: "flex", alignItems: "center", gap: 2 }}
               >
                 <TextField
-                  label="ラベル"
+                  type="text"
                   value={duration.label}
                   onChange={(e) =>
                     handleDurationChange(duration.id, "label", e.target.value)
@@ -162,13 +174,10 @@ export const SettingsModal: React.FC<Props> = ({
                   }
                 />
                 <Select
-                  value={duration.color}
+                  sx={{ width: "300px" }}
+                  value={duration.hex}
                   onChange={(e) =>
-                    handleDurationChange(
-                      duration.id,
-                      "color",
-                      e.target.value as LessonDuration["color"],
-                    )
+                    handleDurationChange(duration.id, "hex", e.target.value)
                   }
                   renderValue={(value) => (
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -177,9 +186,7 @@ export const SettingsModal: React.FC<Props> = ({
                           width: 20,
                           height: 20,
                           borderRadius: "50%",
-                          backgroundColor: colorOptions.find(
-                            (c) => c.value === value,
-                          )?.hex,
+                          backgroundColor: value,
                         }}
                       />
                       {colorOptions.find((c) => c.value === value)?.label}

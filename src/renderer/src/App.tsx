@@ -66,7 +66,7 @@ const App = () => {
     setRemainingTime(minutes * 60);
     setShowWarning(false);
 
-    handleChangeWindowSize(400, 160, true);
+    handleChangeWindowSize(400, 150, true);
   };
 
   const stopTimer = () => {
@@ -206,30 +206,32 @@ const App = () => {
               flexGrow: 1,
             }}
           >
-            {showWelcomeMessage && (
-              <Paper
-                elevation={0}
-                sx={{
-                  padding: "24px",
-                  bgcolor: "info.light",
-                  color: "info.contrastText",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Typography variant="h6">{welcomeMessage}</Typography>
-                <IconButton onClick={handleEditMessage} size="small">
-                  <EditIcon />
-                </IconButton>
-              </Paper>
-            )}
             {!endTime && (
-              <TimerSelect
-                lessonDurations={lessonDurations}
-                startTimer={startTimer}
-                onClickSettings={() => setShowSettingsModal(true)}
-              />
+              <>
+                {showWelcomeMessage && (
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      padding: "24px",
+                      bgcolor: "info.light",
+                      color: "info.contrastText",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Typography variant="h6">{welcomeMessage}</Typography>
+                    <IconButton onClick={handleEditMessage} size="small">
+                      <EditIcon />
+                    </IconButton>
+                  </Paper>
+                )}
+                <TimerSelect
+                  lessonDurations={lessonDurations}
+                  startTimer={startTimer}
+                  onClickSettings={() => setShowSettingsModal(true)}
+                />
+              </>
             )}
             {endTime && (
               <TimerDisplay

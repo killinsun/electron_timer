@@ -1,4 +1,4 @@
-const AnalogClock = ({ size = 128 }) => {
+const AnalogClock = ({ size = 120 }) => {
   const radius = size / 2 - 10;
   const center = size / 2;
 
@@ -21,7 +21,7 @@ const AnalogClock = ({ size = 128 }) => {
       />
       {[...Array(12)].map((item, i) => {
         const angle = (i * 30 - 90) * (Math.PI / 180);
-        const padding = size / 10; // サイズの1/8を内側の余白として使用
+        const padding = size / 15; // サイズの1/8を内側の余白として使用
         const numberX = center + (radius - padding) * Math.cos(angle);
         const numberY = center + (radius - padding) * Math.sin(angle);
         return (
