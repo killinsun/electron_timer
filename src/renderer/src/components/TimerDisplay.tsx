@@ -46,7 +46,7 @@ export const TimerDisplay: FC<Props> = (props) => {
           variant="h5"
           sx={{
             fontWeight: 700,
-            fontSize: "1.5rem",
+            fontSize: "1.3rem",
             color: isTimeRunningOut ? "red" : "black",
           }}
         >
