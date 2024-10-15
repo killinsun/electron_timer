@@ -21,10 +21,14 @@ import { useLessonDurations } from "./hooks/useLessonDurations";
 import { useSettings } from "./hooks/useSettings";
 
 export interface IElectronAPI {
-  resizeWindow: (width: number, height: number, isBottomRight: boolean) => void;
-  setFullScreen: (isFullScreen: boolean) => void;
+  resizeWindow: (
+    width: number,
+    height: number,
+    isBottomRight: boolean,
+  ) => Promise<void>;
+  setFullScreen: (isFullScreen: boolean) => Promise<void>;
   uploadVideo: () => Promise<string | null>;
-  setAlwaysOnTop: (isAlwaysOnTop: boolean) => void;
+  setAlwaysOnTop: (isAlwaysOnTop: boolean) => Promise<void>;
 }
 
 declare global {
@@ -67,7 +71,7 @@ const App = () => {
     setShowWarning(false);
 
     if (settings.forceAlwaysOnTop) {
-      window.api.setAlwaysOnTop(true);
+      window.api.setAlwaysOnTop(true).then();
     }
     handleChangeWindowSize(400, 150, true);
   };
@@ -81,7 +85,7 @@ const App = () => {
     setIsTimeRunningOut(false);
     setShowMessageInput(true);
 
-    window.api.setAlwaysOnTop(false);
+    window.api.setAlwaysOnTop(false).then();
     handleChangeWindowSize(900, 670, false);
   };
 
@@ -108,7 +112,7 @@ const App = () => {
     height: number,
     isBottomRight: boolean,
   ) => {
-    window.api.resizeWindow(width, height, isBottomRight);
+    window.api.resizeWindow(width, height, isBottomRight).then();
   };
 
   // @ts-ignore
@@ -127,18 +131,19 @@ const App = () => {
         ) {
           setIsTimeRunningOut(() => true);
           setShowWarning(() => true);
-          window.api.setFullScreen(true);
-          window.api.setAlwaysOnTop(true);
+          window.api.setFullScreen(true).then(() => {
+            window.api.setAlwaysOnTop(true);
+          });
 
           const newWarningTimer = setTimeout(() => {
             setShowWarning(false);
-            window.api.setFullScreen(false);
-
-            if (settings.forceAlwaysOnTop) {
-              // do nothing
-            } else {
-              window.api.setAlwaysOnTop(false);
-            }
+            window.api.setFullScreen(false).then(() => {
+              if (settings.forceAlwaysOnTop) {
+                // do nothing
+              } else {
+                window.api.setAlwaysOnTop(false).then();
+              }
+            });
           }, 10000);
           setWarningTimer(() => newWarningTimer);
         } else if (diff <= 0) {
@@ -146,8 +151,9 @@ const App = () => {
           setShowWarning(() => false);
           setIsTimeRunningOut(() => false);
           clearInterval(timer);
-          window.api.setFullScreen(true);
-          window.api.setAlwaysOnTop(true);
+          window.api.setFullScreen(true).then(() => {
+            window.api.setAlwaysOnTop(true).then();
+          });
         }
       }, 1000);
 
