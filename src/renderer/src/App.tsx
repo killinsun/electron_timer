@@ -131,8 +131,8 @@ const App = () => {
         ) {
           setIsTimeRunningOut(() => true);
           setShowWarning(() => true);
-          window.api.setFullScreen(true).then(() => {
-            window.api.setAlwaysOnTop(true);
+          window.api.setAlwaysOnTop(true).then(() => {
+            window.api.setFullScreen(true).then();
           });
 
           const newWarningTimer = setTimeout(() => {
@@ -151,8 +151,8 @@ const App = () => {
           setShowWarning(() => false);
           setIsTimeRunningOut(() => false);
           clearInterval(timer);
-          window.api.setFullScreen(true).then(() => {
-            window.api.setAlwaysOnTop(true).then();
+          window.api.setAlwaysOnTop(true).then(() => {
+            window.api.setFullScreen(true).then();
           });
         }
       }, 1000);
