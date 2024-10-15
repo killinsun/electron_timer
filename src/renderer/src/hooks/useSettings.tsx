@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 
 export type Settings = {
+  forceAlwaysOnTop: boolean;
   warningMinutes: number; // 何分前に警告を出すか
   warningVideoPath: string | null; // 警告時に再生する動画のパス
   finishVideoPath: string | null; // 終了時に再生する動画のパス
 };
 
 const defaultSettings = {
+  forceAlwaysOnTop: false, // false:5分前と終了時にのみ最前面表示
   warningMinutes: 5,
   warningVideoPath: null,
   finishVideoPath: null,

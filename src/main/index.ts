@@ -116,6 +116,10 @@ function createWindow(): void {
     return null;
   });
 
+  ipcMain.handle("set-always-on-top", (_, isAlwaysOnTop) => {
+    mainWindow.setAlwaysOnTop(isAlwaysOnTop);
+  });
+
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
   });

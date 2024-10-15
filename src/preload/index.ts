@@ -13,6 +13,9 @@ const api = {
   uploadVideo: async () => {
     return await ipcRenderer.invoke("upload-video");
   },
+  setAlwaysOnTop: async (isAlwaysOnTop: boolean) => {
+    await ipcRenderer.invoke("set-always-on-top", isAlwaysOnTop);
+  },
 };
 
 // Use `contextBridge` APIs to expose Electron APIs to

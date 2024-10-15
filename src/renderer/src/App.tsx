@@ -24,7 +24,7 @@ export interface IElectronAPI {
   resizeWindow: (width: number, height: number, isBottomRight: boolean) => void;
   setFullScreen: (isFullScreen: boolean) => void;
   uploadVideo: () => Promise<string | null>;
-  getSavedVideo: () => Promise<File>;
+  setAlwaysOnTop: (isAlwaysOnTop: boolean) => void;
 }
 
 declare global {
@@ -66,6 +66,9 @@ const App = () => {
     setRemainingTime(minutes * 60);
     setShowWarning(false);
 
+    if (settings.forceAlwaysOnTop) {
+      window.api.setAlwaysOnTop(true);
+    }
     handleChangeWindowSize(400, 150, true);
   };
 
@@ -78,6 +81,7 @@ const App = () => {
     setIsTimeRunningOut(false);
     setShowMessageInput(true);
 
+    window.api.setAlwaysOnTop(false);
     handleChangeWindowSize(900, 670, false);
   };
 
@@ -124,10 +128,12 @@ const App = () => {
           setIsTimeRunningOut(() => true);
           setShowWarning(() => true);
           window.api.setFullScreen(true);
+          window.api.setAlwaysOnTop(true);
 
           const newWarningTimer = setTimeout(() => {
             setShowWarning(false);
             window.api.setFullScreen(false);
+            window.api.setAlwaysOnTop(false);
           }, 10000);
           setWarningTimer(() => newWarningTimer);
         } else if (diff <= 0) {
@@ -136,6 +142,7 @@ const App = () => {
           setIsTimeRunningOut(() => false);
           clearInterval(timer);
           window.api.setFullScreen(true);
+          window.api.setAlwaysOnTop(true);
         }
       }, 1000);
 
@@ -207,7 +214,17 @@ const App = () => {
             }}
           >
             {!endTime && (
-              <>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  gap: "16px",
+                  flexGrow: 1,
+                  height: "100%",
+                  paddingY: "48px",
+                }}
+              >
                 {showWelcomeMessage && (
                   <Paper
                     elevation={0}
@@ -226,12 +243,22 @@ const App = () => {
                     </IconButton>
                   </Paper>
                 )}
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    color: "text.secondary",
+                    fontSize: "1.5rem",
+                  }}
+                >
+                  該当のボタンを押して学習をスタートしよう！
+                </Typography>
                 <TimerSelect
                   lessonDurations={lessonDurations}
                   startTimer={startTimer}
                   onClickSettings={() => setShowSettingsModal(true)}
                 />
-              </>
+              </Box>
             )}
             {endTime && (
               <TimerDisplay

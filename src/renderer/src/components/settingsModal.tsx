@@ -6,7 +6,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
   MenuItem,
   Select,
   Tab,
@@ -105,6 +107,13 @@ export const SettingsModal: React.FC<Props> = ({
         setSettings((prevSettings) => ({
           ...prevSettings,
           [field]: Number(value),
+        }));
+      }
+
+      if (field === "forceAlwaysOnTop") {
+        setSettings((prevSettings) => ({
+          ...prevSettings,
+          [field]: value === "true",
         }));
       }
     },
@@ -222,7 +231,24 @@ export const SettingsModal: React.FC<Props> = ({
           </Box>
         )}
         {tab === 1 && (
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2, my: 4 }}>
+            <FormControl fullWidth>
+              <InputLabel id="forceAlwaysOnTop">タイマーの表示</InputLabel>
+              <Select
+                label="タイマーの表示"
+                value={settings.forceAlwaysOnTop ? "true" : "false"}
+                onChange={(e) =>
+                  handleSettingsChange("forceAlwaysOnTop", e.target.value)
+                }
+              >
+                <MenuItem value="true">
+                  タイマー起動中は常に最前面に表示する
+                </MenuItem>
+                <MenuItem value="false">
+                  {settings.warningMinutes}分前と終了時のみ最前面に表示する
+                </MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               label="何分前に警告を表示するか"
               type="number"
