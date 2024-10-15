@@ -133,7 +133,12 @@ const App = () => {
           const newWarningTimer = setTimeout(() => {
             setShowWarning(false);
             window.api.setFullScreen(false);
-            window.api.setAlwaysOnTop(false);
+
+            if (settings.forceAlwaysOnTop) {
+              // do nothing
+            } else {
+              window.api.setAlwaysOnTop(false);
+            }
           }, 10000);
           setWarningTimer(() => newWarningTimer);
         } else if (diff <= 0) {
